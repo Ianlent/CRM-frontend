@@ -54,7 +54,14 @@ const AdminDashboard = () => {
     .filter((record) => {
       return dayjs(record.date).isSame(dayjs(), "day") && record.category === "Revenue"
     })
-    .reduce((total, record) => total+record.amount, 0) + recentOrder.reduce((total, record) => total+record.totalPrice, 0)
+    .reduce((total, record) => total+record.amount, 0) + 
+    recentOrder
+    .filter((record) => {
+      return record.status === "Completed"
+    })
+    .reduce((total, record) => total+record.totalPrice, 0)
+    //OrderData record
+    //{key: 1743272956806, time: "2025-03-30 01:29:16", customerName: "bbbbb", status: "Completed", totalPrice: 35}
   useEffect(() => {
     // {date: "2025-03-19", key: 1742391640724, type: "Rent", category: "Expense", amount: 10} Record format
   
@@ -81,7 +88,7 @@ const AdminDashboard = () => {
     );
 
     const currentRevenue = Object.values(
-      [...financialData, ...orderData.map(({ time, totalPrice }) => ({
+      [...financialData, ...orderData.filter((record)=>record.status==="Completed").map(({ time, totalPrice }) => ({
           date: dayjs(time).format("YYYY-MM-DD"), // Normalize order date format
           category: "Revenue", // Treat orders as revenue
           amount: totalPrice
@@ -127,7 +134,7 @@ const AdminDashboard = () => {
       
       
       <div className="grid grid-cols-3 grid-rows-1 divide-x divide-gray-500">
-          <MetricCard title={'Orders completed today'} stat={recentOrder.length}></MetricCard>
+          <MetricCard title={'Orders completed today'} stat={recentOrder.filter((record)=>record.status==="Completed").length}></MetricCard>
           <MetricCard title={'Revenue today'} stat={revenueToday}></MetricCard>
           <MetricCard title={'Active Employees'} stat={activeEmployees.length}></MetricCard>
       </div>
