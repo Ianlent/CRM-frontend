@@ -5,7 +5,7 @@ const Navbar = () => {
     return(
         <div>
             <div className="fixed h-[10vh] w-full bg-white top-0 flex items-center justify-between z-50">
-                <img className="h-full" src="../src/assets/components/images/logo.png" alt="" />
+                <img className="h-full" src="/logo.png" alt="" />
                 <div className="w-full h-full flex items-center justify-between">
                     <Search
                         placeholder="Search"
@@ -17,7 +17,7 @@ const Navbar = () => {
                     />
                     <div className="h-full flex items-center mr-1">
                         <p>Admin</p>
-                        <img className="h-[80%]" src="../src/assets/components/images/default-profile.jpg" alt="" />
+                        <img className="h-[80%]" src="/default-profile.jpg" alt="" />
                     </div>
                 </div>
             </div>
