@@ -1,4 +1,5 @@
 import { useState } from "react"
+import EditableTable from "../../../components/EditableTable/table.jsx"
 const columns = [
     {
         title: "ID",
