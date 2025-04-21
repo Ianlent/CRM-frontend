@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { Table, Button, Form } from "antd";
+import { PlusOutlined, EditOutlined, DeleteOutlined } from "@ant-design/icons";
 import EditModal from "./modal";
 
 /**
@@ -59,11 +60,11 @@ const EditableTable = () => {
 
 	/**
 	 * Adds a new record to the data source by concatenating the values with a
-	 * new key and adding it to the end of the data source.
+	 * new key and adding it to the START of the data source.
 	 * @param {Object} values The values of the new record to be added.
 	*/
 	const handleAdd = (values) => {
-		setDataSource((prev) => [...prev, { key: `${prev.length + 1}`, ...values }]);
+		setDataSource((prev) => [{ key: `${prev.length + 1}`, ...values }, ...prev]);
 	};
 
 	/**
@@ -106,19 +107,21 @@ const EditableTable = () => {
 			title: 'Action',
 			key: 'operation',
 			render: (_, record) => (
-				<div className="flex justify-around">
-					<Button type="primary" onClick={() => handleEdit(record)}>Edit</Button>
-					<Button danger onClick={() => handleDelete(record)}>Delete</Button>
+				<div className="flex justify-center gap-3">
+					<Button className="px-2.5" type="primary" onClick={() => handleEdit(record)}><EditOutlined /></Button>
+					<Button className="px-2.5" danger onClick={() => handleDelete(record)}><DeleteOutlined /></Button>
 				</div>
 			),
-			width: "20%",
+			width: "10%",
 		},
 	];
 
 	return (
 		<div>
-			<Button type="primary" onClick={handleAddClick}>Add</Button>
-			<Table bordered dataSource={dataSource} columns={columns} />
+			<Button className="text-base my-4 px-5 py-5 ps-3" type="primary" onClick={handleAddClick}>
+				<PlusOutlined className="m-0"/> Add
+			</Button>
+			<Table bordered dataSource={dataSource} columns={columns} pagination={{ pageSize: 6 }}/>
 			<EditModal open={open} setOpen={setOpen} record={editingRecord} form={form} onOk={onOk} />
 		</div>
 	);

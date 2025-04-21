@@ -58,6 +58,7 @@ const CustomerManagement = () => {
 	return (
 		<div>
 			<p className="font-semibold text-2xl py-3">Manage Customers</p>
+			<EditableTable />
 		</div>
 	)
 }
