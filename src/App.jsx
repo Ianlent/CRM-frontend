@@ -21,62 +21,62 @@ import EditableTable from "./assets/components/EditableTable/table.jsx";
 
 
 const App = () => {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [isLoadingData, setIsLoadingData] = useState(true);
-  const [userRole, setUserRole] = useState(null);
+	const [isAuthenticated, setIsAuthenticated] = useState(false);
+	const [isLoadingData, setIsLoadingData] = useState(true);
+	const [userRole, setUserRole] = useState(null);
 
-  useEffect(() => {
-    const token = localStorage.getItem("token");
-    if (token) {
-      setIsAuthenticated(true);
-      setIsLoadingData(false);
-      setUserRole(localStorage.getItem("userRole"));
-    } else {
-      setIsAuthenticated(false);
-      setIsLoadingData(false);
-      setUserRole(null);
-    }
-  }, []);
+	useEffect(() => {
+		const token = localStorage.getItem("token");
+		if (token) {
+			setIsAuthenticated(true);
+			setIsLoadingData(false);
+			setUserRole(localStorage.getItem("userRole"));
+		} else {
+			setIsAuthenticated(false);
+			setIsLoadingData(false);
+			setUserRole(null);
+		}
+	}, []);
 
-  return (
-    <div className="page">
-      <Routes>
-        <Route path="/" element={<Navigate to="/login" />} />
+	return (
+		<div className="page">
+			<Routes>
+				<Route path="/" element={<Navigate to="/login" />} />
 
-        <Route 
-          path="/login" 
-          element={
-            <LoginPage
-              setIsAuthenticated={setIsAuthenticated}
-              setUserRole={setUserRole}
-            />
-          }/>
+				<Route
+					path="/login"
+					element={
+						<LoginPage
+							setIsAuthenticated={setIsAuthenticated}
+							setUserRole={setUserRole}
+						/>
+					} />
 
-        <Route
-          path="/admin"
-          element={            
-              <AdminLayout />
-          }
-        >
-          <Route path="dashboard" element={<AdminDashboard />} />
-          <Route path="employee-management" element={<EmployeeManagement />} />
-          <Route path="customer-management" element={<CustomerManagement />} />
-          <Route path="financial-management" element={<FinancialManagement />} />
-          <Route path="order-management" element={<OrderManagement />} />
-        </Route>
+				<Route
+					path="/admin"
+					element={
+						<AdminLayout />
+					}
+				>
+					<Route path="dashboard" element={<AdminDashboard />} />
+					<Route path="employee-management" element={<EmployeeManagement />} />
+					<Route path="customer-management" element={<CustomerManagement />} />
+					<Route path="financial-management" element={<FinancialManagement />} />
+					<Route path="order-management" element={<OrderManagement />} />
+				</Route>
 
-        <Route
-          path="/employee"
-          element={      
-            <EmployeeLayout />
-          }
-        />
+				<Route
+					path="/employee"
+					element={
+						<EmployeeLayout />
+					}
+				/>
 
-        <Route path="/test" element={<EditableTable/>} />
-        <Route path="*" element={<NotFound />} />
-      </Routes>
-    </div>
-  );
+				<Route path="/test" element={<EditableTable />} />
+				<Route path="*" element={<NotFound />} />
+			</Routes>
+		</div>
+	);
 };
 
 export default App;

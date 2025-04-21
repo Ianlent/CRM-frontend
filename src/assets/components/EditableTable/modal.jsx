@@ -24,53 +24,53 @@ import { useEffect } from "react";
  * The EditModal component returns a JSX element that contains the Modal
  * component, the Form component, and the fields of the form.
  */
-const EditModal = ({ open, setOpen, record, form, onOk}) => {
-  const onCancel = () => {
-    setOpen(false);
-  };
+const EditModal = ({ open, setOpen, record, form, onOk }) => {
+	const onCancel = () => {
+		setOpen(false);
+	};
 
 
-  useEffect(() => {
-    if (open) {
-      if (record) {
-        form.setFieldsValue(record);
-      } else {
-        form.resetFields();
-      }
-    }
-  }, [record, open, form]);
+	useEffect(() => {
+		if (open) {
+			if (record) {
+				form.setFieldsValue(record);
+			} else {
+				form.resetFields();
+			}
+		}
+	}, [record, open, form]);
 
-  return (
-    <Modal
-      title={record ? "Edit Record" : "Add Record"}
-      centered
-      open={open}
-      onCancel={onCancel}
-      onOk={() => {
-        form
-          .validateFields()
-          .then((values) => {
-            onOk(values);
-            form.resetFields();
-          })
-          .catch((info) => {
-            console.log("Validate Failed:", info);
-          });
-      }}
-    >
-      <Form form={form} layout="vertical">
-        <Form.Item name="name" label="Name" rules={[{ required: true }]}>
-          <Input />
-        </Form.Item>
-        <Form.Item name="age" label="Age" rules={[{ required: true }]}>
-          <Input />
-        </Form.Item>
-        <Form.Item name="address" label="Address" rules={[{ required: true }]}>
-          <Input />
-        </Form.Item>
-      </Form>
-    </Modal>
-  );
+	return (
+		<Modal
+			title={record ? "Edit Record" : "Add Record"}
+			centered
+			open={open}
+			onCancel={onCancel}
+			onOk={() => {
+				form
+				.validateFields()
+				.then((values) => {
+					onOk(values);
+					form.resetFields();
+				})
+				.catch((info) => {
+					console.log("Validate Failed:", info);
+				});
+			}}
+		>
+			<Form form={form} layout="vertical">
+				<Form.Item name="name" label="Name" rules={[{ required: true }]}>
+					<Input />
+				</Form.Item>
+				<Form.Item name="age" label="Age" rules={[{ required: true }]}>
+					<Input />
+				</Form.Item>
+				<Form.Item name="address" label="Address" rules={[{ required: true }]}>
+					<Input />
+				</Form.Item>
+			</Form>
+		</Modal>
+	);
 };
 
 export default EditModal;
