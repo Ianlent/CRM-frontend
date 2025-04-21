@@ -2,7 +2,7 @@ import { useNavigate } from 'react-router'
 import { useState } from 'react'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import {faHouse, faUsersGear, faUsersViewfinder, faHandHoldingDollar, faArrowRightFromBracket, faListCheck} from '@fortawesome/free-solid-svg-icons'
-import { logout } from '../../services/authService'
+import { logout } from '../../services/authService.js'
 import { message } from 'antd'
 
 

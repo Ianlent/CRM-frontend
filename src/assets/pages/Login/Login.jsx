@@ -1,40 +1,14 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import LoginForm from "./components/form";
 import { message } from "antd";
-import { getAuth, signInWithEmailAndPassword, setPersistence, browserLocalPersistence, onAuthStateChanged } from "firebase/auth";
-import { getUserRole } from "../../services/authService"; // Import your custom hook or function
 
-const auth = getAuth();
 
 const LoginPage = ({ setIsAuthenticated, setUserRole }) => {
   const [loading, setIsLoading] = useState(false);
-
   const onFinish = async (values) => {
+    console.log(values);
     setIsLoading(true);
-    try {
-      await setPersistence(auth, browserLocalPersistence);
-      const userCredential = await signInWithEmailAndPassword(auth, values.email, values.password);
-      const user = userCredential.user;
-      const idToken = await user.getIdToken();
-
-      message.success(`Login successful`);
-
-      // Fetch role from Firestore or backend
-      const role = await getUserRole(user.uid);
-      setUserRole(role);
-
-      localStorage.setItem("token", JSON.stringify({
-        token: idToken,
-        expiration: Date.now() + 24 * 60 * 60 * 1000,
-      }));
-
-      setIsAuthenticated(true);
-    } catch (error) {
-      message.error("Invalid credentials, please try again.");
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  }
 
   return (
     <div className="min-h-screen max-h-screen m-0 bg-cover bg-no-repeat flex flex-col justify-center items-center"

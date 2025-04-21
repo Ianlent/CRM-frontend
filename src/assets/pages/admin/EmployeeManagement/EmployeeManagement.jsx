@@ -1,4 +1,3 @@
-import EditableTable from "../../../components/EditableTable";
 import { useState } from "react";
 import { Tag } from "antd";
 
@@ -62,7 +61,6 @@ const EmployeeManagement = () => {
   return(
     <div>
       <p className="font-semibold text-2xl py-3">Manage Employees</p>
-      <EditableTable columns={columns} data={data} setData={setData} tableLabel={infoLabel}></EditableTable>
     </div>
   )
 }

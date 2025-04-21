@@ -1,7 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { getAuth, onAuthStateChanged } from "firebase/auth";
 import { Route, Routes, Navigate } from "react-router";
-import ProtectedRoute from "./assets/components/ProtectedRoute.jsx";
 import "./App.css"
 
 import NotFound from "./assets/pages/NotFound.jsx";
@@ -13,45 +11,25 @@ import EmployeeManagement from "./assets/pages/admin/EmployeeManagement/Employee
 import CustomerManagement from "./assets/pages/admin/CustomerManagement/CustomerManagement.jsx";
 import FinancialManagement from "./assets/pages/admin/FinancialManagement/FinancialManagement.jsx";
 import OrderManagement from "./assets/pages/admin/OrderHistory/OrderHistory.jsx";
-import { getUserRole } from "./assets/services/authService.js";
+
 import EmployeeLayout from "./assets/layouts/employee/employeeLayout.jsx";
 
 const App = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [userRole, setUserRole] = useState(null);
   const [isLoadingData, setIsLoadingData] = useState(true);
+  const [userRole, setUserRole] = useState(null);
 
   useEffect(() => {
-    const auth = getAuth();
-  
-    // Listen for auth state changes
-    const unsubscribe = onAuthStateChanged(auth, async (user) => {
-      if (user) {
-        setIsLoadingData(true);
-        try {
-          // Fetch role from Firestore instead of localStorage
-          const role = await getUserRole(user.uid);
-          if (role) {
-            setUserRole(role);
-            setIsAuthenticated(true);
-          } else {
-            setUserRole(null);
-            setIsAuthenticated(false);
-          }
-        } catch (error) {
-          console.error("Error fetching user role:", error);
-          setUserRole(null);
-          setIsAuthenticated(false);
-        }
-      } else {
-        setIsAuthenticated(false);
-        setUserRole(null);
-      }
-  
+    const token = localStorage.getItem("token");
+    if (token) {
+      setIsAuthenticated(true);
       setIsLoadingData(false);
-    });
-  
-    return () => unsubscribe();
+      setUserRole(localStorage.getItem("userRole"));
+    } else {
+      setIsAuthenticated(false);
+      setIsLoadingData(false);
+      setUserRole(null);
+    }
   }, []);
 
   return (
@@ -59,32 +37,19 @@ const App = () => {
       <Routes>
         <Route path="/" element={<Navigate to="/login" />} />
 
-        <Route
-          path="/login"
+        <Route 
+          path="/login" 
           element={
-            isAuthenticated ? (
-              userRole === "admin" ? (
-                <Navigate to="/admin" />
-              ) : (
-                <Navigate to="/employee" />
-              )
-            ) : (
-              <LoginPage setIsAuthenticated={setIsAuthenticated} setUserRole={setUserRole} />
-            )
-          }
-        />
+            <LoginPage
+              setIsAuthenticated={setIsAuthenticated}
+              setUserRole={setUserRole}
+            />
+          }/>
 
         <Route
           path="/admin"
-          element={
-            <ProtectedRoute
-              isAuthenticated={isAuthenticated}
-              isLoadingData={isLoadingData}
-              currentRole={userRole}
-              allowedRoles={["admin"]}
-            >
+          element={            
               <AdminLayout />
-            </ProtectedRoute>
           }
         >
           <Route path="dashboard" element={<AdminDashboard />} />
@@ -96,15 +61,8 @@ const App = () => {
 
         <Route
           path="/employee"
-          element={
-            <ProtectedRoute
-              isAuthenticated={isAuthenticated}
-              isLoadingData={isLoadingData}
-              currentRole={userRole}
-              allowedRoles={["employee"]}
-            >
-              <EmployeeLayout />
-            </ProtectedRoute>
+          element={      
+            <EmployeeLayout />
           }
         />
 
@@ -115,3 +73,4 @@ const App = () => {
 };
 
 export default App;
+

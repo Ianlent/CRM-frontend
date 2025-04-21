@@ -1,5 +1,4 @@
 import { useState } from "react";
-import EditableTable from "../../../components/EditableTable";
 import { Tag } from "antd";
 
 const columns = [
@@ -55,7 +54,6 @@ const FinancialManagement = () => {
     return(
         <div>
             <p className="font-semibold text-2xl py-3">Manage Finances</p>
-            <EditableTable columns={columns} data={data} setData={setData} tableLabel={infoLabel}></EditableTable>
         </div>
     )
 }

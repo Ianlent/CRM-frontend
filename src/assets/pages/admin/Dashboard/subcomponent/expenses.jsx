@@ -23,7 +23,7 @@ const ExpenseDonutChart = ({data}) => {
                 <Tooltip
                     formatter={(value, name) => {
                         const percentage = ((value / total) * 100).toFixed(1);
-                        return [`${name}: ${value}VND (${percentage}%)`]; // Format: "1200 (40.0%)"
+                        return [`${name}: ${value} (${percentage}%)`]; // Format: "1200 (40.0%)"
                     }}
                 />
                 <Legend />
