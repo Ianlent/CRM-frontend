@@ -20,13 +20,9 @@ import EditModal from "./modal";
  * The EditableTable component returns a JSX element that contains the Table,
  * the EditModal, and the Button.
  */
-const EditableTable = () => {
+const EditableTable = ({sourceColumn, sourceData, setSourceData, rowKey}) => {
 	const [open, setOpen] = useState(false);
 	const [editingRecord, setEditingRecord] = useState(null);
-	const [dataSource, setDataSource] = useState([
-		{ key: '1', name: 'Mike', age: 32, address: '10 Downing Street' },
-		{ key: '2', name: 'John', age: 42, address: '10 Downing Street' },
-	]);
 	const [mode, setMode] = useState(null);
 
 	const [form] = Form.useForm();
@@ -64,7 +60,7 @@ const EditableTable = () => {
 	 * @param {Object} values The values of the new record to be added.
 	*/
 	const handleAdd = (values) => {
-		setDataSource((prev) => [{ key: `${prev.length + 1}`, ...values }, ...prev]);
+		setSourceData((prev) => [{ ...values }, ...prev]);
 	};
 
 	/**
@@ -72,16 +68,16 @@ const EditableTable = () => {
 	 * @param {Object} updatedValues The updated values of the record to be saved.
 	*/
 	const handleSave = (updatedValues) => {
-		setDataSource((prev) =>
+		setSourceData((prev) =>
 			prev.map((item) =>
-				item.key === editingRecord.key ? { ...item, ...updatedValues } : item
+				item[rowKey] === editingRecord[rowKey] ? { ...item, ...updatedValues } : item
 			))
 		setEditingRecord(null);
 	}
 
 	const handleDelete = (record) => {
-		const key = record.key;
-		setDataSource((prev) => prev.filter((item) => item.key !== key));
+		const id = record[rowKey];
+		setSourceData((prev) => prev.filter((item) => item[rowKey] !== id));
 	};
 
 
@@ -100,9 +96,7 @@ const EditableTable = () => {
 
 
 	const columns = [
-		{ title: 'Name', dataIndex: 'name', key: 'name' },
-		{ title: 'Age', dataIndex: 'age', key: 'age' },
-		{ title: 'Address', dataIndex: 'address', key: 'address' },
+		...sourceColumn,
 		{
 			title: 'Action',
 			key: 'operation',
@@ -121,8 +115,8 @@ const EditableTable = () => {
 			<Button className="text-base my-4 px-5 py-5 ps-3" type="primary" onClick={handleAddClick}>
 				<PlusOutlined className="m-0"/> Add
 			</Button>
-			<Table bordered dataSource={dataSource} columns={columns} pagination={{ pageSize: 6 }}/>
-			<EditModal open={open} setOpen={setOpen} record={editingRecord} form={form} onOk={onOk} />
+			<Table bordered dataSource={sourceData} columns={columns} pagination={{ pageSize: 6 }} rowKey={rowKey}/>
+			<EditModal open={open} setOpen={setOpen} columns={sourceColumn} record={editingRecord} form={form} onOk={onOk} rowKey={rowKey}/>
 		</div>
 	);
 };

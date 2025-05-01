@@ -24,7 +24,7 @@ import { useEffect } from "react";
  * The EditModal component returns a JSX element that contains the Modal
  * component, the Form component, and the fields of the form.
  */
-const EditModal = ({ open, setOpen, record, form, onOk }) => {
+const EditModal = ({ open, columns, setOpen, record, form, onOk, rowKey }) => {
 	const onCancel = () => {
 		setOpen(false);
 	};
@@ -48,26 +48,32 @@ const EditModal = ({ open, setOpen, record, form, onOk }) => {
 			onCancel={onCancel}
 			onOk={() => {
 				form
-				.validateFields()
-				.then((values) => {
-					onOk(values);
-					form.resetFields();
-				})
-				.catch((info) => {
-					console.log("Validate Failed:", info);
-				});
+					.validateFields()
+					.then((values) => {
+						const finalValues = record
+							? { [rowKey]: record[rowKey], ...values }
+							: values;
+						onOk(finalValues);
+						form.resetFields();
+					})
+					.catch((info) => {
+						console.log("Validate Failed:", info);
+					});
 			}}
 		>
 			<Form form={form} layout="vertical">
-				<Form.Item name="name" label="Name" rules={[{ required: true }]}>
-					<Input />
-				</Form.Item>
-				<Form.Item name="age" label="Age" rules={[{ required: true }]}>
-					<Input />
-				</Form.Item>
-				<Form.Item name="address" label="Address" rules={[{ required: true }]}>
-					<Input />
-				</Form.Item>
+				{columns
+					.filter(col => col.editable)
+					.map(col => (
+						<Form.Item
+							key={col.key}
+							name={col.dataIndex}
+							label={col.title}
+							rules={[{ required: true }]}
+						>
+							<Input type={col.inputType || "text"} />
+						</Form.Item>
+					))}
 			</Form>
 		</Modal>
 	);

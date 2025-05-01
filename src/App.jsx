@@ -15,8 +15,7 @@ import OrderManagement from "./assets/pages/admin/OrderHistory/OrderHistory.jsx"
 import EmployeeLayout from "./assets/layouts/employee/employeeLayout.jsx";
 
 
-//test component
-import EditableTable from "./assets/components/EditableTable/table.jsx";
+
 
 
 
@@ -72,7 +71,6 @@ const App = () => {
 					}
 				/>
 
-				<Route path="/test" element={<EditableTable />} />
 				<Route path="*" element={<NotFound />} />
 			</Routes>
 		</div>
