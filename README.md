@@ -1,4 +1,4 @@
-## Family Business Management System - FrontendOverview
+## Family Business Management System - Frontend Overview
 The Family Business Management System (Frontend) provides a user-friendly interface to interact with the backend system. Built with React.js, Tailwind CSS, and Ant Design (antd), this dashboard allows users (admins and employees) to manage business operations, visualize data, and interact with customers, transactions, and employee information.
 
 ## Technologies Used:
