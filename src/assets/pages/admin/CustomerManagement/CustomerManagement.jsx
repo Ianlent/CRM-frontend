@@ -2,13 +2,6 @@ import { useState } from "react"
 import EditableTable from "../../../components/EditableTable/table.jsx"
 const columns = [
 	{
-		title: "ID",
-		dataIndex: "customer_id",
-		key: "customer_id",
-		editable: false,
-		render: (id) => `#${id}`,
-	},
-	{
 		title: "First Name",
 		dataIndex: "first_name",
 		key: "first_name",
@@ -53,7 +46,7 @@ const columns = [
 const infoLabel = "Customers"
 
 const CustomerManagement = () => {
-	const [data, setData] = useState([
+	const [data, setData] = useState(localStorage.getItem(infoLabel) ? JSON.parse(localStorage.getItem(infoLabel)) : [
 		{
 			customer_id: 1,
 			first_name: "John",
@@ -82,7 +75,7 @@ const CustomerManagement = () => {
 	return (
 		<div>
 			<p className="font-semibold text-2xl py-3">Manage Customers</p>
-			<EditableTable sourceColumn={columns} sourceData={data} setSourceData={setData} rowKey={"customer_id"}/>
+			<EditableTable columns={columns} data={data} setData={setData} tableLabel={infoLabel} rowKey={"customer_id"}/>
 		</div>
 	)
 }

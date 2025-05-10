@@ -1,124 +1,195 @@
-import React, { useState } from "react";
-import { Table, Button, Form } from "antd";
-import { PlusOutlined, EditOutlined, DeleteOutlined } from "@ant-design/icons";
-import EditModal from "./modal";
+import React, { cloneElement, useState } from "react";
+import {
+  Table,
+  Button,
+  Popconfirm,
+  Modal,
+  Form,
+  Input,
+  InputNumber,
+  Select,
+  DatePicker,
+  Space,
+} from "antd";
+import {
+  EditOutlined,
+  DeleteOutlined,
+  PlusOutlined,
+} from "@ant-design/icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faXmark, faCheck } from "@fortawesome/free-solid-svg-icons";
+import dayjs from "dayjs";
 
-/**
- * EditableTable is a React component that displays a table with editable rows.
- * It is a compound component that includes a Table, an EditModal, and a Button.
- * The Table displays the data, the EditModal is used to edit the data, and the
- * Button is used to add new data.
- *
- * The EditableTable uses the useState hook to keep track of the state of the
- * modal and the selected row. The useImperativeHandle hook is used to get a
- * reference to the Form component from the EditModal component.
- *
- * The EditableTable component also defines two functions: handleAdd and
- * handleEdit. The handleAdd function is used to add a new row of data to the
- * table, and the handleEdit function is used to edit an existing row of data.
- *
- * The EditableTable component returns a JSX element that contains the Table,
- * the EditModal, and the Button.
- */
-const EditableTable = ({sourceColumn, sourceData, setSourceData, rowKey}) => {
-	const [open, setOpen] = useState(false);
-	const [editingRecord, setEditingRecord] = useState(null);
-	const [mode, setMode] = useState(null);
+const { Option } = Select;
 
-	const [form] = Form.useForm();
+const EditableTable = ({ columns, data, setData, tableLabel, rowKey }) => {
+  const [form] = Form.useForm();
+  const [editingRecord, setEditingRecord] = useState(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isEditMode, setIsEditMode] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
 
+  const openModal = (record = null) => {
+    setIsEditMode(!!record);
+    const initialValues = record
+      ? {
+          ...record,
+          date: record.date ? dayjs(record.date) : null,
+          time: record.time ? dayjs(record.time) : null,
+        }
+      : columns.reduce((acc, col) => {
+          if (col.dataIndex === "date") {
+            acc[col.dataIndex] = dayjs();
+          } else if (col.dataIndex === "time") {
+            acc[col.dataIndex] = dayjs();
+          } else {
+            acc[col.dataIndex] = "";
+          }
+          return acc;
+        }, {});
 
-	/**
-	 * Prepares the form and modal for adding a new record by resetting the form fields,
-	 * setting the mode to "add", and opening the modal.
-	 */
+    form.setFieldsValue(initialValues);
+    setEditingRecord(record);
+    setIsModalOpen(true);
+  };
 
-	const handleAddClick = () => {
-		setEditingRecord(null);
-		form.resetFields();
-		setMode("add");
-		setOpen(true);
-	};
+  const handleDelete = (key) => {
+    const newData = data.filter((item) => item[rowKey] !== key);
+    setData(newData);
+    localStorage.setItem(tableLabel, JSON.stringify(newData));
+  };
 
+  const handleSave = async () => {
+    try {
+      const values = await form.validateFields();
+      if (values.date) {
+        values.date = values.date.format("YYYY-MM-DD");
+      }
+      if (values.time) {
+        values.time = values.time.format("YYYY-MM-DD HH:mm:ss");
+      }
 
-	/**
-	 * Prepares the form and modal for editing an existing record by setting the
-	 * form fields to the values of the selected record, setting the mode to
-	 * "edit", and opening the modal.
-	 * @param {Object} record the record to edit
-	*/
-	const handleEdit = (record) => {
-		setEditingRecord(record);
-		form.setFieldsValue(record);
-		setMode("edit");
-		setOpen(true);
-	};
+      const key = editingRecord ? editingRecord[rowKey] : Date.now();
+      const newData = isEditMode
+        ? data.map((item) => (item[rowKey] === key ? { ...item, ...values } : item))
+        : [...data, { ...values, [rowKey]: key }];
 
-	/**
-	 * Adds a new record to the data source by concatenating the values with a
-	 * new key and adding it to the START of the data source.
-	 * @param {Object} values The values of the new record to be added.
-	*/
-	const handleAdd = (values) => {
-		setSourceData((prev) => [{ ...values }, ...prev]);
-	};
+      const sortedData = newData.sort((a, b) => {
+        if (a.date && b.date) return dayjs(b.date).diff(dayjs(a.date));
+        if (a.time && b.time) return dayjs(b.time).diff(dayjs(a.time));
+        return 0;
+      });
 
-	/**
-	 * Updates the data source with the updated values and resets the editing record to null.
-	 * @param {Object} updatedValues The updated values of the record to be saved.
-	*/
-	const handleSave = (updatedValues) => {
-		setSourceData((prev) =>
-			prev.map((item) =>
-				item[rowKey] === editingRecord[rowKey] ? { ...item, ...updatedValues } : item
-			))
-		setEditingRecord(null);
-	}
+      setData(sortedData);
+      localStorage.setItem(tableLabel, JSON.stringify(sortedData));
+      setIsModalOpen(false);
+      setEditingRecord(null);
+      if (!isEditMode) {
+        setCurrentPage(Math.ceil(sortedData.length / 4));
+      }
+    } catch (err) {
+      console.log("Validation Failed:", err);
+    }
+  };
 
-	const handleDelete = (record) => {
-		const id = record[rowKey];
-		setSourceData((prev) => prev.filter((item) => item[rowKey] !== id));
-	};
+  const renderInput = (col) => {
+    switch (col.inputType) {
+      case "number":
+        return <InputNumber />;
+      case "date":
+        return <DatePicker format="YYYY-MM-DD" />;
+      case "time":
+        return <DatePicker showTime format="YYYY-MM-DD HH:mm:ss" />;
+      case "select":
+        return (
+          <Select>
+            {col.options?.map((opt) => (
+              <Option key={opt} value={opt}>
+                {opt}
+              </Option>
+            ))}
+          </Select>
+        );
+      default:
+        return <Input />;
+    }
+  };
 
+  const extendedColumns = [
+    ...columns,
+    {
+      title: "Actions",
+      dataIndex: "actions",
+      render: (_, record) => (
+        <Space>
+          <Button icon={<EditOutlined />} onClick={() => openModal(record)} />
+          <Popconfirm title="Sure to delete?" onConfirm={() => handleDelete(record[rowKey])}>
+            <Button icon={<DeleteOutlined />} danger />
+          </Popconfirm>
+        </Space>
+      ),
+    },
+  ];
 
-	const onOk = (values) => {
-		console.log("OK", values);
-		if (mode === "add") {
-			console.log("adding", values);
-			handleAdd(values);
-		} else if (mode === "edit") {
-			handleSave(values);
-		}
-		setOpen(false);
-		setMode(null);
-	};
+  return (
+    <>
+      <div className="mb-4">
+        <Button
+          onClick={() => openModal()}
+          type="primary"
+          icon={<PlusOutlined />}
+        >
+          Add {tableLabel}
+        </Button>
+      </div>
 
+      <Table
+		rowKey={rowKey}
+        bordered
+        dataSource={data}
+        columns={extendedColumns}
+        pagination={{
+          pageSize: 4,
+          current: currentPage,
+          onChange: (page) => setCurrentPage(page),
+        }}
+        locale={{
+          emptyText: (
+            <div className="min-h-48 text-gray-500 text-lg">No data available...</div>
+          ),
+        }}
+      />
 
-
-	const columns = [
-		...sourceColumn,
-		{
-			title: 'Action',
-			key: 'operation',
-			render: (_, record) => (
-				<div className="flex justify-center gap-3">
-					<Button className="px-2.5" type="primary" onClick={() => handleEdit(record)}><EditOutlined /></Button>
-					<Button className="px-2.5" danger onClick={() => handleDelete(record)}><DeleteOutlined /></Button>
-				</div>
-			),
-			width: "10%",
-		},
-	];
-
-	return (
-		<div>
-			<Button className="text-base my-4 px-5 py-5 ps-3" type="primary" onClick={handleAddClick}>
-				<PlusOutlined className="m-0"/> Add
-			</Button>
-			<Table bordered dataSource={sourceData} columns={columns} pagination={{ pageSize: 6 }} rowKey={rowKey}/>
-			<EditModal open={open} setOpen={setOpen} columns={sourceColumn} record={editingRecord} form={form} onOk={onOk} rowKey={rowKey}/>
-		</div>
-	);
+      <Modal
+        title={isEditMode ? `Edit ${tableLabel}` : `Add ${tableLabel}`}
+        open={isModalOpen}
+        onCancel={() => {
+          setIsModalOpen(false);
+          setEditingRecord(null);
+        }}
+        onOk={handleSave}
+        okText={<FontAwesomeIcon icon={faCheck} />}
+        cancelText={<FontAwesomeIcon icon={faXmark} />}
+        okButtonProps={{ className: "border-green-500" }}
+        cancelButtonProps={{ className: "border-red-500" }}
+      >
+        <Form form={form} layout="vertical">
+          {columns.map((col) => (
+            <Form.Item
+              key={col.dataIndex}
+              name={col.dataIndex}
+              label={col.title}
+              rules={[{ required: true, message: `Please input ${col.title}` }]}
+            >
+              	{React.cloneElement(renderInput(col), {
+					disabled: col.dataIndex === rowKey
+				})}
+            </Form.Item>
+          ))}
+        </Form>
+      </Modal>
+    </>
+  );
 };
 
 export default EditableTable;
