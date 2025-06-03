@@ -12,14 +12,18 @@ const LoginPage = () => {
   const dispatch = useDispatch();
 
   // Select relevant state from Redux store
-  const { isAuthenticated, status, error } = useSelector((state) => state.auth);
+  const { isAuthenticated, status, error, user } = useSelector((state) => state.auth);
 
   useEffect(() => {
     // If login is successful and auth status is 'succeeded', navigate to dashboard
     if (isAuthenticated && status === 'succeeded') {
       // The RedirectIfAuthenticated component might also handle this,
       // but this ensures immediate navigation after login.
-      navigate('/admin/dashboard', { replace: true }); // Assuming admin is default post-login
+      if (user.userRole === 'admin') {
+        navigate('/admin/dashboard', { replace: true });
+      } else {
+        navigate('/employee/dashboard', { replace: true });
+      }
     }
   }, [isAuthenticated, status, navigate]);
 

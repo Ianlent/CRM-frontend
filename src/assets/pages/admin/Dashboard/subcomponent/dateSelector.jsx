@@ -3,20 +3,20 @@ import dayjs from 'dayjs';
 
 const { RangePicker } = DatePicker;
 
-const DateSelection = ({onSelection}) => {
+const DateSelection = ({ onSelection }) => {
   const handleChange = (dates, dateStrings) => {
     if (!dates || dates.length === 0) {
       console.log("Range Picker is empty!");
-      onSelection([dayjs().startOf("day"), dayjs().endOf("day")]);
+      onSelection([dayjs().format("YYYY-MM-DD"), dayjs().format("YYYY-MM-DD")]);
     } else {
-      console.log('Selected Time Range:', dates, dateStrings);
-      onSelection(dates)
+      onSelection(dateStrings);
     }
   };
 
   return (
-    <RangePicker 
-      onChange={handleChange} 
+    <RangePicker
+      onChange={handleChange}
+      disabledDate={(date) => date && date > dayjs().startOf('day')}
     />
   );
 };

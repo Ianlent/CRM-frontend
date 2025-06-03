@@ -4,7 +4,7 @@ import { useEffect } from "react";
 import { useSelector } from "react-redux"; // To get user role for validation
 
 import Navbar from "../../components/Navbar/Navbar";
-import Sidebar from "../../components/Sidebar/Sidebar";
+import Sidebar from "../../components/Sidebar/AdminSidebar";
 
 const AdminLayout = () => {
   const location = useLocation();
@@ -41,7 +41,7 @@ const AdminLayout = () => {
     <div>
       <Sidebar />
       <Navbar />
-      <div className="flex-1 mt-[10vh] ml-12 p-4">
+      <div className="flex-1 pt-[10vh] ml-16 mr-4">
         <Outlet />
       </div>
     </div>

@@ -19,8 +19,7 @@ const RedirectIfAuthenticated = ({ children }) => {
 
     // If authenticated, determine redirect path based on user role
     if (isAuthenticated && user) {
-        let redirectPath = '/dashboard'; // Default dashboard for any authenticated user
-
+        let redirectPath = '/';
         // Use user.userRole to determine the specific dashboard
         if (user.userRole === 'admin') {
             redirectPath = '/admin/dashboard';
