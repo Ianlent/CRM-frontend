@@ -5,7 +5,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faHouse, faUsersGear, faUsersViewfinder, faHandHoldingDollar, faArrowRightFromBracket, faListCheck } from '@fortawesome/free-solid-svg-icons';
 import { message } from 'antd';
 import { useDispatch } from 'react-redux'; // Import useDispatch
-import { logout } from '../../../features/authSlice'; // Adjust path based on your folder structure
+import { logout } from '../../../features/auth/authSlice'; // Adjust path based on your folder structure
 
 
 const Sidebar = () => {

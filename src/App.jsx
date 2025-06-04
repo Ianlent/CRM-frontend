@@ -29,71 +29,71 @@ import FinancialManagement from "./assets/pages/admin/FinancialManagement/Financ
 import OrderManagement from "./assets/pages/admin/OrderHistory/OrderHistory.jsx";
 
 const App = () => {
-  const navigate = useNavigate();
+	const navigate = useNavigate();
 
-  // Set the navigate function for the axios interceptor on component mount
-  useEffect(() => {
-    setAxiosInterceptorNavigator(navigate);
-  }, [navigate]);
+	// Set the navigate function for the axios interceptor on component mount
+	useEffect(() => {
+		setAxiosInterceptorNavigator(navigate);
+	}, [navigate]);
 
-  return (
-    <Routes>
-      {/* Public Routes - redirect authenticated users */}
-      <Route
-        path="/"
-        element={
-          <RedirectIfAuthenticated>
-            <LoginPage />
-          </RedirectIfAuthenticated>
-        }
-      />
-      <Route
-        path="/login"
-        element={
-          <RedirectIfAuthenticated>
-            <LoginPage />
-          </RedirectIfAuthenticated>
-        }
-      />
+	return (
+		<Routes>
+			{/* Public Routes - redirect authenticated users */}
+			<Route
+				path="/"
+				element={
+					<RedirectIfAuthenticated>
+						<LoginPage />
+					</RedirectIfAuthenticated>
+				}
+			/>
+			<Route
+				path="/login"
+				element={
+					<RedirectIfAuthenticated>
+						<LoginPage />
+					</RedirectIfAuthenticated>
+				}
+			/>
 
-      {/* Admin Routes - Protected and Role-Based */}
-      <Route
-        path="/admin"
-        element={
-          <ProtectedRoute allowedRoles={['admin']}>
-            <AdminLayout /> {/* AdminLayout will render Navbar, Sidebar, and its own Outlet */}
-          </ProtectedRoute>
-        }
-      >
-        {/* Index Route for /admin: Redirects directly to /admin/dashboard */}
-        <Route index element={<Navigate to="dashboard" replace />} />
-        <Route path="dashboard" element={<AdminDashboard />} />
-        <Route path="employee-management" element={<EmployeeManagement />} />
-        <Route path="customer-management" element={<CustomerManagement />} />
-        <Route path="financial-management" element={<FinancialManagement />} />
-        <Route path="order-management" element={<OrderManagement />} />
-      </Route>
+			{/* Admin Routes - Protected and Role-Based */}
+			<Route
+				path="/admin"
+				element={
+					<ProtectedRoute allowedRoles={['admin']}>
+						<AdminLayout /> {/* AdminLayout will render Navbar, Sidebar, and its own Outlet */}
+					</ProtectedRoute>
+				}
+			>
+				{/* Index Route for /admin: Redirects directly to /admin/dashboard */}
+				<Route index element={<Navigate to="dashboard" replace />} />
+				<Route path="dashboard" element={<AdminDashboard />} />
+				<Route path="employee-management" element={<EmployeeManagement />} />
+				<Route path="customer-management" element={<CustomerManagement />} />
+				<Route path="financial-management" element={<FinancialManagement />} />
+				<Route path="order-management" element={<OrderManagement />} />
+			</Route>
 
-      {/* Employee Routes - Protected and Role-Based */}
-      <Route
-        path="/employee"
-        element={
-          <ProtectedRoute allowedRoles={['employee', 'manager', 'admin']}>
-            <EmployeeLayout /> {/* EmployeeLayout will render its own layout and Outlet */}
-          </ProtectedRoute>
-        }
-      >
-        {/* Example: Default dashboard for employees */}
-        <Route index element={<Navigate to="dashboard" replace />} />
-        {/* You would add employee-specific routes here, e.g.: */}
-        {/* <Route path="dashboard" element={<EmployeeDashboard />} /> */}
-        {/* <Route path="service-entry" element={<ServiceEntryPage />} /> */}
-      </Route>
+			{/* Employee Routes - Protected and Role-Based */}
+			<Route
+				path="/employee"
+				element={
+					<ProtectedRoute allowedRoles={['employee', 'manager', 'admin']}>
+						<EmployeeLayout /> {/* EmployeeLayout will render its own layout and Outlet */}
+					</ProtectedRoute>
+				}
+			>
+				{/* Example: Default dashboard for employees */}
+				<Route index element={<Navigate to="dashboard" replace />} />
+				{/* You would add employee-specific routes here, e.g.: */}
+				{/* <Route path="dashboard" element={<EmployeeDashboard />} /> */}
+				{/* <Route path="service-entry" element={<ServiceEntryPage />} /> */}
+			</Route>
 
-      <Route path="/unauthorized" element={<UnauthorizedPage />} />
-      <Route path="*" element={<NotFound />} />
-    </Routes>
-  );
+			<Route path="/unauthorized" element={<UnauthorizedPage />} />
+			<Route path="*" element={<NotFound />} />
+		</Routes>
+	);
 };
 
 export default App;

@@ -1,6 +1,5 @@
-// src/features/auth/authSlice.js
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
-import axiosInstance from "../api/axiosInstance"; // Use your configured axios instance
+import axiosInstance from "../../api/axiosInstance"; // Use your configured axios instance
 
 // Async Thunk for Login
 export const loginUser = createAsyncThunk(
@@ -41,7 +40,7 @@ const authSlice = createSlice({
 		user: JSON.parse(localStorage.getItem("user")) || null,
 		token: localStorage.getItem("token") || null,
 		isAuthenticated: !!localStorage.getItem("token"), // True if token exists
-		status: "idle", // 'idle' | 'loading' | 'succeeded' | 'failed'
+		status: "initializing", // 'ininitializing' | 'loading' | 'succeeded' | 'failed' | 'idle' | 'verifying'
 		error: null,
 	},
 	reducers: {
@@ -67,11 +66,8 @@ const authSlice = createSlice({
 					state.user = JSON.parse(storedUser);
 					state.token = storedToken;
 					state.isAuthenticated = true;
-					// Note: axiosInstance itself handles setting Authorization header on requests now.
-					// You don't need axios.defaults.headers.common['Authorization'] here anymore.
 				} catch (e) {
 					console.error("Failed to parse stored user or token:", e);
-					// Clear corrupted storage if parsing fails
 					localStorage.removeItem("user");
 					localStorage.removeItem("token");
 					state.user = null;
@@ -84,7 +80,7 @@ const authSlice = createSlice({
 	extraReducers: (builder) => {
 		builder
 			.addCase(loginUser.pending, (state) => {
-				state.status = "loading";
+				state.status = "verifying";
 				state.error = null;
 			})
 			.addCase(loginUser.fulfilled, (state, action) => {

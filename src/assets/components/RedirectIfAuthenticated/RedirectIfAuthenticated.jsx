@@ -1,14 +1,13 @@
-// src/assets/components/RedirectIfAuthenticated/RedirectIfAuthenticated.jsx
 import React from 'react';
 import { Navigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
-import { Spin } from 'antd'; // Ant Design Spin for loading indicator
+import { Spin } from 'antd';
 
 const RedirectIfAuthenticated = ({ children }) => {
-    // Get auth state from Redux store
     const { isAuthenticated, user, status } = useSelector((state) => state.auth);
 
-    // If auth state is still 'loading' (e.g., from initial localStorage check)
+    // If the global auth status is still verifying, show a loading spinner.
+    // This is important for landing on / or /login when a token exists but is being checked.
     if (status === 'loading') {
         return (
             <div className="flex justify-center items-center h-screen">
@@ -17,22 +16,20 @@ const RedirectIfAuthenticated = ({ children }) => {
         );
     }
 
-    // If authenticated, determine redirect path based on user role
+    // If authenticated (and token verified by App.jsx's logic)
     if (isAuthenticated && user) {
         let redirectPath = '/';
-        // Use user.userRole to determine the specific dashboard
         if (user.userRole === 'admin') {
             redirectPath = '/admin/dashboard';
         } else if (user.userRole === 'employee' || user.userRole === 'manager') {
-            redirectPath = '/employee/dashboard'; // Assuming managers use employee layout for now
+            redirectPath = '/employee/dashboard';
         }
-        // Add more role-based redirection paths as needed
 
         console.log(`User is authenticated as ${user.userRole}. Redirecting to ${redirectPath}`);
         return <Navigate to={redirectPath} replace />;
     }
 
-    // If not authenticated, render the children (e.g., LoginPage)
+    // If not authenticated (or token verification failed), render the children (e.g., LoginPage)
     return <>{children}</>;
 };
 
