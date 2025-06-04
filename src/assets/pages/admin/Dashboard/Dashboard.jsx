@@ -1,13 +1,16 @@
 import MetricCard from "./subcomponent/Card";
 import DonutChart from "./subcomponent/PopularityDonut";
 import RevenueLineChart from "./subcomponent/RevenueLineChart";
+import OrderTrafficBarChart from "./subcomponent/OrderTraffic";
 import RecentTransactionTable from "./subcomponent/RecentTransTable";
-import { Divider } from "antd";
+import { Divider, Select } from "antd";
 import { useEffect, useState } from "react";
 import DateSelection from "./subcomponent/DateSelector";
 
 import dayjs from 'dayjs';
 import isBetween from 'dayjs/plugin/isBetween'
+
+import axiosInstance from "../../../../api/axiosInstance";
 
 dayjs.extend(isBetween)
 
@@ -18,10 +21,34 @@ dayjs.extend(isBetween)
 
 const AdminDashboard = () => {
 	const [currentDateSelection, setCurrentDateSelection] = useState([dayjs().format("YYYY-MM-DD"), dayjs().format("YYYY-MM-DD")]);
+	const [popularityType, setPopularityType] = useState("quantity");
+	const [financialSummary, setFinancialSummary] = useState(null);
+	const [orderTraffic, setOrderTraffic] = useState(null);
+	const [servicePopularity, setServicePopularity] = useState(null);
+
+	const handlePopularityTypeChange = (value) => {
+		setPopularityType(value);
+	}
 
 	useEffect(() => {
-		console.log(currentDateSelection);
+		const { start, end } = currentDateSelection[0] ? { start: currentDateSelection[0], end: currentDateSelection[1] } : { start: dayjs().format("YYYY-MM-DD"), end: dayjs().format("YYYY-MM-DD") };
+		const fetchData = async () => {
+			const financial = await axiosInstance.get(`/api/analytics/financial?start=${start}&end=${end}`);
+			setFinancialSummary(financial.data.data);
+			const orderTraffic = await axiosInstance.get(`/api/analytics/traffic?start=${start}&end=${end}`);
+			setOrderTraffic(orderTraffic.data.data);
+		}
+		fetchData();
 	}, [currentDateSelection])
+
+	useEffect(() => {
+		const { start, end } = currentDateSelection[0] ? { start: currentDateSelection[0], end: currentDateSelection[1] } : { start: dayjs().format("YYYY-MM-DD"), end: dayjs().format("YYYY-MM-DD") };
+		const fetchData = async () => {
+			const servicePopularity = await axiosInstance.get(`/api/analytics/service-popularity?type=${popularityType}&start=${start}&end=${end}`);
+			setServicePopularity(servicePopularity.data);
+		}
+		fetchData();
+	}, [currentDateSelection, popularityType])
 
 	return (
 		<>
@@ -44,14 +71,28 @@ const AdminDashboard = () => {
 				<MetricCard title={'Revenue today'} stat={0}></MetricCard>
 				<MetricCard title={'Active Employees'} stat={0}></MetricCard>
 			</div>
-			<div className="flex flex-row h-[25rem]">
+			<div className="flex flex-row h-[27rem]">
 				<div className="bg-white basis-1/3 mr-3 px-3 py-2 rounded-lg">
-					<p className="font-semibold text-xl text-center m-0">Item Popularity by { }</p>
-					<DonutChart data={[]} />
+					<div className="flex flex-col items-center">
+						<p className="font-semibold text-xl text-center m-0">Item Popularity by</p>
+						<Select
+							defaultValue="quantity"
+							style={{ width: 120 }}
+							onChange={handlePopularityTypeChange}
+							options={[
+								{ value: 'quantity', label: 'Quantity' },
+								{ value: 'revenue', label: 'Revenue' },
+							]}
+						/>
+					</div>
+					<DonutChart data={servicePopularity} />
 				</div>
 				<div className="flex justify-between bg-white basis-2/3 p-2 rounded-lg">
-					<RevenueLineChart className="w-full flex flex-col items-center" data={[]}></RevenueLineChart>
+					<OrderTrafficBarChart className="w-full flex flex-col items-center" data={orderTraffic}></OrderTrafficBarChart>
 				</div>
+			</div>
+			<div className="w-full bg-white p-4 rounded-lg mt-4 h-[27rem]">
+				<RevenueLineChart className="w-full flex flex-col items-center" data={financialSummary}></RevenueLineChart>
 			</div>
 			<div>
 				<p className="mt-6 mb-1 font-semibold text-4xl">Recent Orders</p>

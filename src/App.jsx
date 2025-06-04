@@ -1,7 +1,6 @@
 // src/App.jsx
 import { useEffect } from "react";
 import { Route, Routes, useNavigate, Navigate } from "react-router-dom";
-import { useSelector } from "react-redux"; // For getting user role in AdminRedirect (if used)
 import "./App.css" // Your global CSS
 
 // Import your page components

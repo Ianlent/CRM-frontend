@@ -4,10 +4,11 @@ import { useSelector } from 'react-redux';
 import { Spin } from 'antd';
 
 const RedirectIfAuthenticated = ({ children }) => {
-    const { isAuthenticated, user, status } = useSelector((state) => state.auth);
+    const { isAuthenticated, user, status, loggingIn } = useSelector((state) => state.auth);
 
     // If the global auth status is still verifying, show a loading spinner.
     // This is important for landing on / or /login when a token exists but is being checked.
+    // logginIn is false and set to true only while waiting for authentication server response.
     if (status === 'loading') {
         return (
             <div className="flex justify-center items-center h-screen">

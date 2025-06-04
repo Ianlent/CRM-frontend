@@ -1,6 +1,5 @@
-// src/api/axiosInstance.js
 import axios from "axios";
-
+import { logout } from "../features/auth/authSlice";
 // Ensure you have VITE_API_BASE_URL set in your .env file
 // Example: VITE_API_BASE_URL=http://localhost:5000
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
@@ -13,18 +12,22 @@ const axiosInstance = axios.create({
 });
 
 let globalNavigate; // A variable to hold the navigate function from react-router-dom
+let globalDispatch;
 
 // Function to set the navigate function (called from App.js)
 export const setAxiosInterceptorNavigator = (navigateFn) => {
 	globalNavigate = navigateFn;
 };
 
+export const setAxiosInterceptorDispatch = (dispatchFn) => {
+	globalDispatch = dispatchFn;
+};
+
 // Request Interceptor: Attach token before sending request
 axiosInstance.interceptors.request.use(
 	(config) => {
 		// Retrieve token from local storage or session storage
-		const token =
-			localStorage.getItem("token") || sessionStorage.getItem("token");
+		const token = localStorage.getItem("token") || "";
 		if (token) {
 			config.headers["Authorization"] = `Bearer ${token}`;
 		}
@@ -74,13 +77,10 @@ axiosInstance.interceptors.response.use(
 
 			// Perform redirection and clean up if any of the above conditions met
 			if (shouldRedirectToLogin) {
-				// Clear all authentication data from storage
-				localStorage.removeItem("token");
-				sessionStorage.removeItem("token");
-				localStorage.removeItem("user");
-				sessionStorage.removeItem("user");
-				localStorage.removeItem("lastVisitedAdminPath"); // Clear custom path on logout
-
+				// Use the globally set dispatch function for logout
+				if (globalDispatch) {
+					globalDispatch(logout()); // Ensure `logout` action is correctly imported or accessed where globalDispatch is set.
+				}
 				// Use the globally set navigate function for redirection
 				if (globalNavigate) {
 					globalNavigate("/login", { replace: true });

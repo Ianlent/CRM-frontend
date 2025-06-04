@@ -1,4 +1,3 @@
-// src/assets/pages/Login/Login.jsx
 import React, { useEffect } from 'react';
 import { Form, Input, Button, Checkbox, Card, Typography, message } from 'antd';
 import { useNavigate } from 'react-router-dom';
