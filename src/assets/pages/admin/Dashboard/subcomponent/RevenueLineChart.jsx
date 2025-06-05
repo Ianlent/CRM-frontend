@@ -3,7 +3,6 @@ import dayjs from 'dayjs';
 import { useState } from 'react';
 
 const RevenueLineChart = ({ className, data }) => {
-    console.log(data);
     const [activeLines, setActiveLines] = useState({
         revenue: true,
         expenses: true,

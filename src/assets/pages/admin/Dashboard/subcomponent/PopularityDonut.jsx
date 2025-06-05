@@ -3,7 +3,6 @@ import { PieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer } from "recha
 const COLORS = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042", "#A28DFF", "#FF6666", "#FF00FF", "#800080"]; // Added more colors for more categories
 
 const PopularityDonutChart = ({ data }) => {
-    console.log(data);
     // Safely destructure the type and the actual data array
     const chartType = data?.type;
     const chartData = data?.data || [];
