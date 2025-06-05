@@ -25,6 +25,7 @@ const AdminDashboard = () => {
 	const [financialSummary, setFinancialSummary] = useState(null);
 	const [orderTraffic, setOrderTraffic] = useState(null);
 	const [servicePopularity, setServicePopularity] = useState(null);
+	const [todayAnalytic, setTodayAnalytic] = useState({});
 
 	const handlePopularityTypeChange = (value) => {
 		setPopularityType(value);
@@ -37,6 +38,14 @@ const AdminDashboard = () => {
 			setFinancialSummary(financial.data.data);
 			const orderTraffic = await axiosInstance.get(`/api/analytics/traffic?start=${start}&end=${end}`);
 			setOrderTraffic(orderTraffic.data.data);
+			if (start === dayjs().format("YYYY-MM-DD")) {
+				setTodayAnalytic({
+					...todayAnalytic,
+					revenueToday: financial.data.data.overallTotals.totalRevenue,
+					orderTrafficToday: orderTraffic.data.data.overallTotalVolume,
+					ordersCompletedToday: orderTraffic.data.data.overallTotalCompletedVolume
+				});
+			}
 		}
 		fetchData();
 	}, [currentDateSelection])
@@ -46,6 +55,9 @@ const AdminDashboard = () => {
 		const fetchData = async () => {
 			const servicePopularity = await axiosInstance.get(`/api/analytics/service-popularity?type=${popularityType}&start=${start}&end=${end}`);
 			setServicePopularity(servicePopularity.data);
+			if (start === dayjs().format("YYYY-MM-DD")) {
+				setTodayAnalytic({ ...todayAnalytic, servicePopularity: servicePopularity.data });
+			}
 		}
 		fetchData();
 	}, [currentDateSelection, popularityType])
@@ -67,9 +79,9 @@ const AdminDashboard = () => {
 
 
 			<div className="grid grid-cols-3 grid-rows-1 divide-x divide-gray-500 mt-4">
-				<MetricCard title={'Orders completed today'} stat={0}></MetricCard>
-				<MetricCard title={'Revenue today'} stat={0}></MetricCard>
-				<MetricCard title={'Active Employees'} stat={0}></MetricCard>
+				<MetricCard title={'Orders today'} stat={todayAnalytic.orderTrafficToday}></MetricCard>
+				<MetricCard title={'Orders completed today'} stat={todayAnalytic.ordersCompletedToday}></MetricCard>
+				<MetricCard title={'Revenue today'} stat={todayAnalytic.revenueToday}></MetricCard>
 			</div>
 			<div className="flex flex-row h-[27rem]">
 				<div className="bg-white basis-1/3 mr-3 px-3 py-2 rounded-lg">
@@ -94,14 +106,15 @@ const AdminDashboard = () => {
 			<div className="w-full bg-white p-4 rounded-lg mt-4 h-[27rem]">
 				<RevenueLineChart className="w-full flex flex-col items-center" data={financialSummary}></RevenueLineChart>
 			</div>
-			<div>
+			<div className="h-4"></div>
+			{/* <div>
 				<p className="mt-6 mb-1 font-semibold text-4xl">Recent Orders</p>
 				<div className="w-full flex justify-center items-center">
 					<div className="w-full my-3">
 						<RecentTransactionTable data={[]}></RecentTransactionTable>
 					</div>
 				</div>
-			</div>
+			</div> */}
 		</>
 	);
 };
