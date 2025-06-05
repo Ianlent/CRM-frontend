@@ -2,7 +2,8 @@ import MetricCard from "./subcomponent/Card";
 import DonutChart from "./subcomponent/PopularityDonut";
 import RevenueLineChart from "./subcomponent/RevenueLineChart";
 import OrderTrafficBarChart from "./subcomponent/OrderTraffic";
-import RecentTransactionTable from "./subcomponent/RecentTransTable";
+
+import RecentOrdersTable from "./subcomponent/RecentOrdersTable";
 import { Divider, Select } from "antd";
 import { useEffect, useState } from "react";
 import DateSelection from "./subcomponent/DateSelector";
@@ -14,11 +15,6 @@ import axiosInstance from "../../../../api/axiosInstance";
 
 dayjs.extend(isBetween)
 
-
-
-
-
-
 const AdminDashboard = () => {
 	const [currentDateSelection, setCurrentDateSelection] = useState([dayjs().format("YYYY-MM-DD"), dayjs().format("YYYY-MM-DD")]);
 	const [popularityType, setPopularityType] = useState("quantity");
@@ -26,6 +22,7 @@ const AdminDashboard = () => {
 	const [orderTraffic, setOrderTraffic] = useState(null);
 	const [servicePopularity, setServicePopularity] = useState(null);
 	const [todayAnalytic, setTodayAnalytic] = useState({});
+
 
 	const handlePopularityTypeChange = (value) => {
 		setPopularityType(value);
@@ -38,7 +35,11 @@ const AdminDashboard = () => {
 			setFinancialSummary(financial.data.data);
 			const orderTraffic = await axiosInstance.get(`/api/analytics/traffic?start=${start}&end=${end}`);
 			setOrderTraffic(orderTraffic.data.data);
-			if (start === dayjs().format("YYYY-MM-DD")) {
+			const servicePopularity = await axiosInstance.get(`/api/analytics/service-popularity?type=${popularityType}&start=${start}&end=${end}`);
+			setServicePopularity(servicePopularity.data);
+			if (start === dayjs().format("YYYY-MM-DD") && end === dayjs().format("YYYY-MM-DD")) {
+				// Remove the ordersToday fetch here as RecentOrdersTable will fetch its own data
+				// const ordersToday = await axiosInstance.get(`/api/orders?start=${start}&end=${end}&page=${pagination.current}&limit=${pagination.pageSize}`);
 				setTodayAnalytic({
 					...todayAnalytic,
 					revenueToday: financial.data.data.overallTotals.totalRevenue,
@@ -60,7 +61,7 @@ const AdminDashboard = () => {
 			}
 		}
 		fetchData();
-	}, [currentDateSelection, popularityType])
+	}, [popularityType])
 
 	return (
 		<>
@@ -76,7 +77,6 @@ const AdminDashboard = () => {
 			<div className="w-full">
 				<Divider className="border-gray-600 m-0"></Divider>
 			</div>
-
 
 			<div className="grid grid-cols-3 grid-rows-1 divide-x divide-gray-500 mt-4">
 				<MetricCard title={'Orders today'} stat={todayAnalytic.orderTrafficToday}></MetricCard>
@@ -106,15 +106,11 @@ const AdminDashboard = () => {
 			<div className="w-full bg-white p-4 rounded-lg mt-4 h-[27rem]">
 				<RevenueLineChart className="w-full flex flex-col items-center" data={financialSummary}></RevenueLineChart>
 			</div>
+
+			<div className="w-full">
+				<RecentOrdersTable />
+			</div>
 			<div className="h-4"></div>
-			{/* <div>
-				<p className="mt-6 mb-1 font-semibold text-4xl">Recent Orders</p>
-				<div className="w-full flex justify-center items-center">
-					<div className="w-full my-3">
-						<RecentTransactionTable data={[]}></RecentTransactionTable>
-					</div>
-				</div>
-			</div> */}
 		</>
 	);
 };
