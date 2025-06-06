@@ -1,6 +1,6 @@
 import { Modal, Button } from "antd";
 
-const DeleteConfirmationModal = ({ visible, onConfirm, onCancel, userName }) => {
+const DeleteConfirmationModal = ({ visible, onConfirm, onCancel, item }) => {
     return (
         <Modal
             title="Confirm Deletion"
@@ -17,7 +17,7 @@ const DeleteConfirmationModal = ({ visible, onConfirm, onCancel, userName }) => 
             ]}
         >
             <p>
-                Are you sure you want to delete user "<strong>{userName}</strong>
+                Are you sure you want to delete "<strong>{item}</strong>
                 "? This action cannot be undone.
             </p>
         </Modal>

@@ -7,7 +7,7 @@ import {
     SearchOutlined,
 } from "@ant-design/icons";
 import UserModal from "./UserModal";
-import DeleteConfirmationModal from "./DeleteConfirmationModal";
+import DeleteConfirmationModal from "../../../../components/DeleteConfirmationModal";
 import axiosInstance from "../../../../../api/axiosInstance";
 
 const UserTable = () => {
@@ -270,8 +270,7 @@ const UserTable = () => {
     };
 
     return (
-        <div className="pt-2">
-            <h1 className="text-2xl font-bold mb-4">User Management</h1>
+        <div>
             <Button
                 type="primary"
                 icon={<PlusOutlined />}

@@ -3,7 +3,8 @@ import UserTable from "./subcomponents/UserTable";
 
 const UserManagementPage = () => {
   return (
-    <div>
+    <div className="mt-4">
+      <p className="text-2xl font-bold mb-4">User Management</p>
       <UserTable />
     </div>
   );
