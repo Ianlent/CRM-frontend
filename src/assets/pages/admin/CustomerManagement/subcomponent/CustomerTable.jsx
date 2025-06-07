@@ -4,6 +4,7 @@ import { EditOutlined, DeleteOutlined, PlusOutlined, SearchOutlined } from '@ant
 import CustomerModal from './CustomerModal'; // Assuming CustomerModal is in the same directory
 import DeleteConfirmationModal from '../../../../components/DeleteConfirmationModal'; // Adjust path if necessary
 import axiosInstance from '../../../../../api/axiosInstance';
+import useDebounce from '../../../../../hooks/useDebounce';
 
 const CustomerTable = () => {
     const [customers, setCustomers] = useState([]);
@@ -14,11 +15,15 @@ const CustomerTable = () => {
         total: 0,
     });
 
-    // States for specific search inputs (Employee/Admin specific filtering)
+    // States for specific search inputs
     const [searchPhoneNumber, setSearchPhoneNumber] = useState('');
     const [searchFirstName, setSearchFirstName] = useState('');
     const [searchLastName, setSearchLastName] = useState('');
-    // Removed generalNameSearch state as backend now uses specific fields
+
+    // Debounced search states
+    const debouncedSearchPhoneNumber = useDebounce(searchPhoneNumber, 200);
+    const debouncedSearchFirstName = useDebounce(searchFirstName, 200);
+    const debouncedSearchLastName = useDebounce(searchLastName, 200);
 
     const [isModalVisible, setIsModalVisible] = useState(false);
     const [editingCustomer, setEditingCustomer] = useState(null); // Null for create, object for edit
@@ -62,50 +67,41 @@ const CustomerTable = () => {
             console.error("Failed to fetch customers:", error);
             setCustomers([]);
             setPagination({ current: 1, pageSize: 6, total: 0 });
-
-            if (error.response && error.response.status === 404) {
-                message.info("No customers found matching your search criteria.");
-            } else {
-                message.error("Failed to fetch customers. Please try again.");
-            }
         } finally {
             setLoading(false);
         }
     };
 
-    // Effect to fetch customers on initial load and when pagination/search params change
+    // Effect to fetch customers on initial load and when pagination/debounced search params change
     useEffect(() => {
         const currentSearchParams = {};
 
-        // Only include search parameters if they are non-empty strings after trimming
-        if (searchPhoneNumber.trim() !== '') {
-            currentSearchParams.phoneNumber = searchPhoneNumber;
+        // Only include debounced search parameters if they are non-empty strings after trimming
+        if (debouncedSearchPhoneNumber.trim() !== '') {
+            currentSearchParams.phoneNumber = debouncedSearchPhoneNumber;
         }
-        if (searchFirstName.trim() !== '') {
-            currentSearchParams.firstName = searchFirstName;
+        if (debouncedSearchFirstName.trim() !== '') {
+            currentSearchParams.firstName = debouncedSearchFirstName;
         }
-        if (searchLastName.trim() !== '') {
-            currentSearchParams.lastName = searchLastName;
+        if (debouncedSearchLastName.trim() !== '') {
+            currentSearchParams.lastName = debouncedSearchLastName;
         }
-        // generalNameSearch is no longer used for backend queries here
 
         fetchCustomers(pagination.current, pagination.pageSize, currentSearchParams);
     }, [
         pagination.current,
         pagination.pageSize,
-        searchPhoneNumber,
-        searchFirstName,
-        searchLastName,
-        // Removed generalNameSearch from dependencies
+        debouncedSearchPhoneNumber,
+        debouncedSearchFirstName,
+        debouncedSearchLastName,
     ]);
 
-    const handleTableChange = (paginationConfig, filters, sorter) => {
+    const handleTableChange = (paginationConfig) => {
         setPagination({
             ...pagination,
             current: paginationConfig.current,
             pageSize: paginationConfig.pageSize,
         });
-        // You might add logic here to handle Ant Design's sorter or filters if implementing server-side sorting/filtering
     };
 
     // Handler for "Add New Customer" button click
@@ -136,9 +132,9 @@ const CustomerTable = () => {
             setIsModalVisible(false); // Close modal
             // Re-fetch current page with current search parameters to reflect changes
             fetchCustomers(pagination.current, pagination.pageSize, {
-                phoneNumber: searchPhoneNumber,
-                firstName: searchFirstName,
-                lastName: searchLastName,
+                phoneNumber: debouncedSearchPhoneNumber,
+                firstName: debouncedSearchFirstName,
+                lastName: debouncedSearchLastName,
             });
         } catch (error) {
             console.error("Failed to save customer:", error);
@@ -165,9 +161,9 @@ const CustomerTable = () => {
             setCustomerToDelete(null); // Clear customer to delete
             // Re-fetch current page with current search parameters to reflect deletion
             fetchCustomers(pagination.current, pagination.pageSize, {
-                phoneNumber: searchPhoneNumber,
-                firstName: searchFirstName,
-                lastName: searchLastName,
+                phoneNumber: debouncedSearchPhoneNumber,
+                firstName: debouncedSearchFirstName,
+                lastName: debouncedSearchLastName,
             });
         } catch (error) {
             console.error("Failed to delete customer:", error);
@@ -201,7 +197,9 @@ const CustomerTable = () => {
                 <Space size="small">
                     <Button
                         icon={<EditOutlined />}
-                        onClick={() => handleEdit(record)}// Disable edit if soft deleted
+                        onClick={() => handleEdit(record)}
+                        // Disable edit if soft deleted (assuming record.isDeleted exists and indicates soft deletion)
+                        disabled={record.isDeleted}
                     />
                     <Button
                         icon={<DeleteOutlined />}
@@ -224,30 +222,29 @@ const CustomerTable = () => {
                         prefix={<SearchOutlined />}
                         placeholder="First Name"
                         value={searchFirstName}
-                        onChange={e => setSearchFirstName(e.target.value)} // Corrected onChange
-                        className='w-1/4' // Adjusted width for better layout in a flex container
+                        onChange={e => setSearchFirstName(e.target.value)}
+                        className='w-1/4'
                     />
                     <Input
                         prefix={<SearchOutlined />}
                         placeholder="Last Name"
                         value={searchLastName}
-                        onChange={e => setSearchLastName(e.target.value)} // Corrected onChange
-                        className='w-1/4' // Adjusted width
+                        onChange={e => setSearchLastName(e.target.value)}
+                        className='w-1/4'
                     />
                     <Input
                         prefix={<SearchOutlined />}
                         placeholder="Phone Number"
                         value={searchPhoneNumber}
                         onChange={e => setSearchPhoneNumber(e.target.value)}
-                        className='w-1/4' // Adjusted width
+                        className='w-1/4'
                     />
-                    {/* Removed generalNameSearch input as it's not used in backend anymore */}
                 </div>
                 <Button
                     type="primary"
                     icon={<PlusOutlined />}
                     onClick={handleAdd}
-                    className="bg-blue-500 hover:bg-blue-700" // Tailwind classes for button styling
+                    className="bg-blue-500 hover:bg-blue-700"
                 >
                     Add Customer
                 </Button>
@@ -267,14 +264,14 @@ const CustomerTable = () => {
                     pageSizeOptions: ['6', '12', '24', '50'], // Ensure these are strings
                     showQuickJumper: true,
                 }}
-                onChange={handleTableChange} // Added styling for the table itself
+                onChange={handleTableChange}
             />
 
             {/* Create/Edit Customer Modal */}
             <CustomerModal
                 visible={isModalVisible}
                 onCancel={handleCancelModal}
-                onSave={handleSave} // handleSave function will receive form values from modal
+                onSave={handleSave}
                 editingCustomer={editingCustomer}
                 isLoading={isSaving}
             />
@@ -284,7 +281,7 @@ const CustomerTable = () => {
                 visible={isDeleteModalVisible}
                 onConfirm={handleDeleteConfirm}
                 onCancel={handleDeleteCancelModal}
-                item={customerToDelete?.firstName + ' ' + customerToDelete?.lastName} // Concatenate for full name
+                item={customerToDelete?.firstName + ' ' + customerToDelete?.lastName}
             />
         </div>
     );

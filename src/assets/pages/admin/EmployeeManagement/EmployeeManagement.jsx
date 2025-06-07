@@ -1,4 +1,3 @@
-import React from "react";
 import UserTable from "./subcomponents/UserTable";
 
 const UserManagementPage = () => {

@@ -1,14 +1,15 @@
-import { useState, useEffect } from "react";
-import { Table, Button, Space, Input, message, Tag } from "antd";
+import React, { useState, useEffect } from 'react';
+import { Table, Button, Space, Input, message, Tag } from 'antd';
 import {
     EditOutlined,
     DeleteOutlined,
     PlusOutlined,
     SearchOutlined,
-} from "@ant-design/icons";
-import UserModal from "./UserModal";
-import DeleteConfirmationModal from "../../../../components/DeleteConfirmationModal";
-import axiosInstance from "../../../../../api/axiosInstance";
+} from '@ant-design/icons';
+import UserModal from './UserModal'; // Assuming UserModal is in the same directory
+import DeleteConfirmationModal from '../../../../components/DeleteConfirmationModal'; // Adjusted path
+import axiosInstance from '../../../../../api/axiosInstance'; // Adjusted path
+import useDebounce from '../../../../../hooks/useDebounce'; // Adjusted path
 
 const UserTable = () => {
     const [users, setUsers] = useState([]);
@@ -18,8 +19,11 @@ const UserTable = () => {
         pageSize: 6,
         total: 0,
     });
-    const [searchText, setSearchText] = useState("");
-    const [searchedColumn, setSearchedColumn] = useState("");
+
+    // State for the external search input
+    const [searchUsername, setSearchUsername] = useState('');
+    // Debounced version of the search username
+    const debouncedSearchUsername = useDebounce(searchUsername, 500); // 500ms debounce delay
 
     const [isModalVisible, setIsModalVisible] = useState(false);
     const [editingUser, setEditingUser] = useState(null);
@@ -28,140 +32,162 @@ const UserTable = () => {
     const [isDeleteModalVisible, setIsDeleteModalVisible] = useState(false);
     const [userToDelete, setUserToDelete] = useState(null);
 
-    const fetchUsers = async (page = 1, limit = 6, search = "") => {
+    // Function to fetch users, now accepting a searchParams object
+    const fetchUsers = async (page = 1, limit = 6, searchParams = {}) => {
         setLoading(true);
         try {
-            const response = await axiosInstance.get(
-                `/api/users?page=${page}&limit=${limit}&search=${search}`
-            );
-            setUsers(response.data.data);
+            let url = `/api/users`;
+            let params = { page, limit };
+
+            // **FIXED:** Map the 'username' from searchParams to the 'search' parameter expected by the backend
+            if (searchParams.username && String(searchParams.username).trim() !== '') {
+                params.search = searchParams.username;
+            }
+
+            const response = await axiosInstance.get(url, { params });
+            setUsers(response.data.data || []);
+
+            const responsePagination = response.data.pagination;
             setPagination({
                 ...pagination,
-                current: response.data.pagination.page,
-                pageSize: response.data.pagination.limit,
-                total: response.data.pagination.total_records,
+                current: responsePagination?.page || page,
+                pageSize: responsePagination?.limit || limit,
+                total: responsePagination?.total_records || 0,
             });
         } catch (error) {
-            console.error("Failed to fetch users:", error);
-            message.error("Failed to fetch users. Please try again.");
+            console.error('Failed to fetch users:', error);
+            setUsers([]); // Clear users on error
+            setPagination({ current: 1, pageSize: 6, total: 0 });
         } finally {
             setLoading(false);
         }
     };
 
+    // Effect hook to trigger data fetching when pagination or debounced search changes
     useEffect(() => {
-        fetchUsers(pagination.current, pagination.pageSize, searchText);
-    }, [pagination.current, pagination.pageSize, searchText]);
+        const currentSearchParams = {};
+        if (debouncedSearchUsername.trim() !== '') {
+            currentSearchParams.username = debouncedSearchUsername;
+        }
+        // When debounced search term changes, reset to the first page of results
+        fetchUsers(1, pagination.pageSize, currentSearchParams);
+        setPagination(prev => ({ ...prev, current: 1 })); // Explicitly reset pagination current to 1
+    }, [debouncedSearchUsername, pagination.pageSize]); // Removed pagination.current from dependencies to prevent infinite loop
 
-    const handleTableChange = (pagination, filters, sorter) => {
-        setPagination(pagination);
+    // Only update pagination.current when user manually changes page number
+    const handleTableChange = (paginationConfig) => {
+        if (pagination.current !== paginationConfig.current || pagination.pageSize !== paginationConfig.pageSize) {
+            setPagination({
+                ...pagination,
+                current: paginationConfig.current,
+                pageSize: paginationConfig.pageSize,
+            });
+            // Fetch data for the new page, preserving the current search term
+            const currentSearchParams = {};
+            if (debouncedSearchUsername.trim() !== '') {
+                currentSearchParams.username = debouncedSearchUsername;
+            }
+            fetchUsers(paginationConfig.current, paginationConfig.pageSize, currentSearchParams);
+        }
     };
 
-    const handleSearch = (selectedKeys, confirm, dataIndex) => {
-        confirm();
-        setSearchText(selectedKeys[0]);
-        setSearchedColumn(dataIndex);
+    // Handler for "Add New User" button click
+    const handleAdd = () => {
+        setEditingUser(null); // Indicate we are creating a new user
+        setIsModalVisible(true);
     };
 
-    const handleReset = (clearFilters) => {
-        clearFilters();
-        setSearchText("");
-        setSearchedColumn("");
+    // Handler for "Edit" button click in table row
+    const handleEdit = (user) => {
+        setEditingUser(user); // Set the user object to be edited
+        setIsModalVisible(true);
     };
 
-    const getColumnSearchProps = (dataIndex) => ({
-        filterDropdown: ({
-            setSelectedKeys,
-            selectedKeys,
-            confirm,
-            clearFilters,
-            filterDropdownProps,
-        }) => (
-            <div style={{ padding: 8 }}>
-                <Input
-                    placeholder={`Search ${dataIndex}`}
-                    value={selectedKeys[0]}
-                    onChange={(e) =>
-                        setSelectedKeys(e.target.value ? [e.target.value] : [])
-                    }
-                    onPressEnter={() => handleSearch(selectedKeys, confirm, dataIndex)}
-                    style={{ marginBottom: 8, display: "block" }}
-                    id={`searchInput-${dataIndex}`}
-                />
-                <Space>
-                    <Button
-                        type="primary"
-                        onClick={() => handleSearch(selectedKeys, confirm, dataIndex)}
-                        icon={<SearchOutlined />}
-                        size="small"
-                        style={{ width: 90 }}
-                    >
-                        Search
-                    </Button>
-                    <Button
-                        onClick={() => clearFilters && handleReset(clearFilters)}
-                        size="small"
-                        style={{ width: 90 }}
-                    >
-                        Reset
-                    </Button>
-                </Space>
-            </div>
-        ),
-        filterIcon: (filtered) => (
-            <SearchOutlined style={{ color: filtered ? "#1890ff" : undefined }} />
-        ),
-        onFilter: (value, record) =>
-            record[dataIndex]
-                ? record[dataIndex]
-                    .toString()
-                    .toLowerCase()
-                    .includes(value.toLowerCase())
-                : "",
-        filterDropdownProps: {
-            onOpenChange: (visible) => {
-                if (visible) {
-                    setTimeout(() => {
-                        const input = document.getElementById(`searchInput-${dataIndex}`);
-                        if (input) {
-                            input.select();
-                        }
-                    }, 100);
+    // Handler for form submission from UserModal (Create or Update)
+    const handleSave = async (values) => {
+        setIsSaving(true);
+        try {
+            if (editingUser) {
+                const updatePayload = { ...values };
+                // Remove password and confirm if they are empty strings during an update
+                if (updatePayload.password === '') {
+                    delete updatePayload.password;
                 }
-            },
-        },
-    });
+                if (updatePayload.confirm === '') {
+                    delete updatePayload.confirm;
+                }
+                await axiosInstance.put(`/api/users/${editingUser._id}`, updatePayload);
+                message.success('User updated successfully!');
+            } else {
+                await axiosInstance.post('/api/users', values);
+                message.success('User created successfully!');
+            }
+            setIsModalVisible(false);
+            // Re-fetch data to reflect changes, using current debounced search and pagination
+            fetchUsers(pagination.current, pagination.pageSize, { username: debouncedSearchUsername });
+        } catch (error) {
+            console.error('Failed to save user:', error);
+            const errorMessage = error.response?.data?.message || 'Failed to save user.';
+            message.error(errorMessage);
+        } finally {
+            setIsSaving(false);
+        }
+    };
 
+    // Handler for "Delete" button click in table row
+    const handleDeleteClick = (user) => {
+        setUserToDelete(user);
+        setIsDeleteModalVisible(true);
+    };
+
+    // Handler for confirming delete operation
+    const handleDeleteConfirm = async () => {
+        if (!userToDelete) return;
+
+        try {
+            await axiosInstance.delete(`/api/users/${userToDelete._id}`);
+            message.success(`User "${userToDelete.username}" deleted successfully!`);
+            setIsDeleteModalVisible(false);
+            setUserToDelete(null);
+            // Re-fetch data to reflect deletion, using current debounced search and pagination
+            fetchUsers(pagination.current, pagination.pageSize, { username: debouncedSearchUsername });
+        } catch (error) {
+            console.error('Failed to delete user:', error);
+            const errorMessage = error.response?.data?.message || 'Failed to delete user.';
+            message.error(errorMessage);
+        }
+    };
+
+    // Handler to cancel UserModal (Add/Edit)
+    const handleCancelModal = () => {
+        setIsModalVisible(false);
+        setEditingUser(null);
+    };
+
+    // Handler to cancel DeleteConfirmationModal
+    const handleCancelDeleteModal = () => {
+        setIsDeleteModalVisible(false);
+        setUserToDelete(null);
+    };
+
+    // Define table columns
     const columns = [
         {
-            title: "Username",
-            dataIndex: "username",
-            key: "username",
-            ...getColumnSearchProps("username"),
-            sorter: (a, b) => a.username.localeCompare(b.username),
+            title: 'Username',
+            dataIndex: 'username',
+            key: 'username',
         },
         {
-            title: "Role",
-            dataIndex: "userRole",
-            key: "userRole",
-            filters: [
-                { text: "Admin", value: "admin" },
-                { text: "Manager", value: "manager" },
-                { text: "Employee", value: "employee" },
-            ],
-            onFilter: (value, record) => record.userRole.indexOf(value) === 0,
+            title: 'Role',
+            dataIndex: 'userRole',
+            key: 'userRole',
         },
         {
-            title: "Status",
-            dataIndex: "userStatus",
-            key: "userStatus",
-            filters: [
-                { text: "Active", value: "active" },
-                { text: "Suspended", value: "suspended" },
-            ],
-            onFilter: (value, record) => record.userStatus.indexOf(value) === 0,
+            title: 'Status',
+            dataIndex: 'userStatus',
+            key: 'userStatus',
             render: (status) => {
-                let color = status === "active" ? "green" : "red";
+                let color = status === 'active' ? 'green' : 'red';
                 return (
                     <Tag color={color} key={status}>
                         {status.toUpperCase()}
@@ -170,13 +196,13 @@ const UserTable = () => {
             },
         },
         {
-            title: "Phone Number",
-            dataIndex: "phoneNumber",
-            key: "phoneNumber",
+            title: 'Phone Number',
+            dataIndex: 'phoneNumber',
+            key: 'phoneNumber',
         },
         {
-            title: "Actions",
-            key: "actions",
+            title: 'Actions',
+            key: 'actions',
             render: (_, record) => (
                 <Space size="middle">
                     <Button
@@ -195,105 +221,45 @@ const UserTable = () => {
         },
     ];
 
-    const handleAdd = () => {
-        setEditingUser(null);
-        setIsModalVisible(true);
-    };
-
-    const handleEdit = (user) => {
-        setEditingUser(user);
-        setIsModalVisible(true);
-    };
-
-    const handleSave = async (values) => {
-        setIsSaving(true);
-        try {
-            if (editingUser) {
-                // For updates, create an object with only the fields that were provided/changed
-                const updatePayload = { ...values };
-                // If password and confirm are empty strings, remove them from the payload
-                // to avoid sending empty password to backend for update
-                if (updatePayload.password === "") {
-                    delete updatePayload.password;
-                }
-                if (updatePayload.confirm === "") { // Also remove confirm if password isn't being updated
-                    delete updatePayload.confirm;
-                }
-                await axiosInstance.put(`/api/users/${editingUser._id}`, updatePayload);
-                message.success("User updated successfully!");
-            } else {
-                await axiosInstance.post("/api/users", values);
-                message.success("User created successfully!");
-            }
-            setIsModalVisible(false);
-            fetchUsers(pagination.current, pagination.pageSize, searchText);
-        } catch (error) {
-            console.error("Failed to save user:", error);
-            const errorMessage =
-                error.response?.data?.message || "Failed to save user.";
-            message.error(errorMessage);
-        } finally {
-            setIsSaving(false);
-        }
-    };
-
-    const handleDeleteClick = (user) => {
-        setUserToDelete(user);
-        setIsDeleteModalVisible(true);
-    };
-
-    const handleDeleteConfirm = async () => {
-        if (!userToDelete) return;
-
-        try {
-            await axiosInstance.delete(`/api/users/${userToDelete._id}`);
-            message.success(`User "${userToDelete.username}" deleted successfully!`);
-            setIsDeleteModalVisible(false);
-            setUserToDelete(null);
-            fetchUsers(pagination.current, pagination.pageSize, searchText);
-        } catch (error) {
-            console.error("Failed to delete user:", error);
-            const errorMessage =
-                error.response?.data?.message || "Failed to delete user.";
-            message.error(errorMessage);
-        }
-    };
-
-    const handleCancelModal = () => {
-        setIsModalVisible(false);
-        setEditingUser(null);
-    };
-
-    const handleCancelDeleteModal = () => {
-        setIsDeleteModalVisible(false);
-        setUserToDelete(null);
-    };
-
     return (
         <div>
-            <Button
-                type="primary"
-                icon={<PlusOutlined />}
-                onClick={handleAdd}
-                className="mb-4 bg-blue-500 hover:bg-blue-700"
-            >
-                Add User
-            </Button>
+            {/* External Search Bar and Add User Button */}
+            <div className="mt-2 flex justify-between items-center mb-4">
+                <Input
+                    prefix={<SearchOutlined />}
+                    placeholder="Search Username"
+                    value={searchUsername}
+                    onChange={(e) => setSearchUsername(e.target.value)}
+                    className="w-1/3 rounded-md shadow-sm"
+                />
+                <Button
+                    type="primary"
+                    icon={<PlusOutlined />}
+                    onClick={handleAdd}
+                    className="bg-blue-500 hover:bg-blue-700 rounded-md shadow-sm"
+                >
+                    Add User
+                </Button>
+            </div>
 
+            {/* Table */}
             <Table
                 columns={columns}
                 dataSource={users}
                 rowKey="_id"
                 loading={loading}
                 pagination={{
-                    ...pagination,
+                    current: pagination.current,
+                    pageSize: pagination.pageSize,
+                    total: pagination.total,
                     showSizeChanger: true,
                     showQuickJumper: true,
-                    pageSizeOptions: [6, 12, 24],
+                    pageSizeOptions: ['6', '12', '24'],
                 }}
                 onChange={handleTableChange}
             />
 
+            {/* Create/Edit User Modal */}
             <UserModal
                 visible={isModalVisible}
                 onCancel={handleCancelModal}
@@ -302,11 +268,12 @@ const UserTable = () => {
                 isLoading={isSaving}
             />
 
+            {/* Delete Confirmation Modal */}
             <DeleteConfirmationModal
                 visible={isDeleteModalVisible}
                 onConfirm={handleDeleteConfirm}
                 onCancel={handleCancelDeleteModal}
-                userName={userToDelete?.username}
+                item={userToDelete?.username}
             />
         </div>
     );

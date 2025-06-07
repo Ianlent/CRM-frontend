@@ -24,6 +24,7 @@ import { setAxiosInterceptorNavigator } from "./api/axiosInstance.js";
 import AdminDashboard from "./assets/pages/admin/Dashboard/Dashboard.jsx";
 import EmployeeManagement from "./assets/pages/admin/EmployeeManagement/EmployeeManagement.jsx";
 import CustomerManagement from "./assets/pages/admin/CustomerManagement/CustomerManagement.jsx";
+import ServiceManagementPage from "./assets/pages/admin/ServiceManagement/ServiceManagement.jsx";
 import FinancialManagement from "./assets/pages/admin/FinancialManagement/FinancialManagement.jsx";
 import OrderManagement from "./assets/pages/admin/OrderHistory/OrderHistory.jsx";
 
@@ -69,6 +70,7 @@ const App = () => {
 				<Route path="dashboard" element={<AdminDashboard />} />
 				<Route path="employee-management" element={<EmployeeManagement />} />
 				<Route path="customer-management" element={<CustomerManagement />} />
+				<Route path="service-management" element={<ServiceManagementPage />} />
 				<Route path="financial-management" element={<FinancialManagement />} />
 				<Route path="order-management" element={<OrderManagement />} />
 			</Route>
