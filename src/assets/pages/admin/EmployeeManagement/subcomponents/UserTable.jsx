@@ -23,7 +23,7 @@ const UserTable = () => {
     // State for the external search input
     const [searchUsername, setSearchUsername] = useState('');
     // Debounced version of the search username
-    const debouncedSearchUsername = useDebounce(searchUsername, 500); // 500ms debounce delay
+    const debouncedSearchUsername = useDebounce(searchUsername, 200);
 
     const [isModalVisible, setIsModalVisible] = useState(false);
     const [editingUser, setEditingUser] = useState(null);

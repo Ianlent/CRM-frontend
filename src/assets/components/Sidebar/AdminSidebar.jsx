@@ -2,7 +2,7 @@
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useState } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faHouse, faUsersGear, faUsersViewfinder, faHandHoldingDollar, faArrowRightFromBracket, faListCheck, faCheckToSlot } from '@fortawesome/free-solid-svg-icons';
+import { faHouse, faUsersGear, faUsersViewfinder, faHandHoldingDollar, faArrowRightFromBracket, faListCheck, faCheckToSlot, faTags } from '@fortawesome/free-solid-svg-icons';
 import { message } from 'antd';
 import { useDispatch } from 'react-redux'; // Import useDispatch
 import { logout } from '../../../features/auth/authSlice'; // Adjust path based on your folder structure
@@ -47,6 +47,13 @@ const Sidebar = () => {
             linkTo: "service-management",
             isExpanded: isExpanded,
             isActive: location.pathname === "/admin/service-management",
+        },
+        {
+            icon: faTags,
+            text: "Discount Management",
+            linkTo: "discount-management",
+            isExpanded: isExpanded,
+            isActive: location.pathname === "/admin/discount-management",
         },
         {
             icon: faHandHoldingDollar,
