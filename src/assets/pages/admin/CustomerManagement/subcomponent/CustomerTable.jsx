@@ -33,7 +33,7 @@ const CustomerTable = () => {
     const [customerToDelete, setCustomerToDelete] = useState(null);
 
     // Function to fetch customers, accepting a searchParams object
-    const fetchCustomers = async (page = 1, limit = 10, searchParams = {}) => {
+    const fetchCustomers = async (page = 1, limit = 6, searchParams = {}) => {
         setLoading(true);
         try {
             let url = `/api/customers`; // Default endpoint for fetching all (or paginated)

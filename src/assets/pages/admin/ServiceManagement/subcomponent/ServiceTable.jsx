@@ -27,7 +27,7 @@ const ServiceTable = () => {
     const [serviceToDelete, setServiceToDelete] = useState(null);
 
     // Function to fetch services, accepting a searchParams object
-    const fetchServices = async (page = 1, limit = 10, searchParams = {}) => {
+    const fetchServices = async (page = 1, limit = 6, searchParams = {}) => {
         setLoading(true);
         try {
             let url = `/api/services`;
