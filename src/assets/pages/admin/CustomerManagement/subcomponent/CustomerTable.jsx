@@ -261,7 +261,7 @@ const CustomerTable = () => {
                     pageSize: pagination.pageSize,
                     total: pagination.total,
                     showSizeChanger: true,
-                    pageSizeOptions: ['6', '12', '24', '50'], // Ensure these are strings
+                    pageSizeOptions: [6, 12, 24], // Ensure these are strings
                     showQuickJumper: true,
                 }}
                 onChange={handleTableChange}
