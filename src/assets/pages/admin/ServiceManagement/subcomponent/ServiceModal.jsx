@@ -30,6 +30,7 @@ const ServiceModal = ({ visible, onCancel, onSave, editingService, isLoading }) 
 
     return (
         <Modal
+            centered
             title={editingService ? "Edit Service" : "Create New Service"}
             open={visible}
             onOk={handleOk}

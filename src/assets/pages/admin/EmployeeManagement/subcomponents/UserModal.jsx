@@ -93,6 +93,7 @@ const UserModal = ({ visible, onCancel, onSave, editingUser, isLoading }) => {
 
     return (
         <Modal
+            centered
             title={editingUser ? "Edit User" : "Create New User"}
             open={visible}
             onOk={handleOk}
@@ -102,6 +103,9 @@ const UserModal = ({ visible, onCancel, onSave, editingUser, isLoading }) => {
             cancelText="Cancel"
         >
             <Form form={form} layout="vertical" name="user_form">
+                <Form.Item name="_id" label="User ID">
+                    <Input readOnly />
+                </Form.Item>
                 <Form.Item
                     name="username"
                     label="Username"

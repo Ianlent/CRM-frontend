@@ -58,6 +58,7 @@ const CustomerModal = ({ visible, onCancel, onSave, editingCustomer, isLoading }
 
     return (
         <Modal
+            centered
             title={editingCustomer ? "Edit Customer" : "Create New Customer"}
             open={visible}
             onOk={handleOk}
@@ -68,6 +69,14 @@ const CustomerModal = ({ visible, onCancel, onSave, editingCustomer, isLoading }
             destroyOnClose={true} // Ensures form state is reset when modal closes
         >
             <Form form={form} layout="vertical" name="customer_form"> {/* Removed 'name' prop on Form.Item */}
+                <Form.Item
+                    name="_id"
+                    label="Customer ID"
+                >
+                    <Input readOnly />
+
+                </Form.Item>
+
                 <Form.Item
                     name="firstName"
                     label="First Name"

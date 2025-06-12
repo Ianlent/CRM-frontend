@@ -70,8 +70,9 @@ const AdminDashboard = () => {
 					<p className="font-semibold text-4xl m-0 mt-2">Welcome back</p>
 					<p className="text-base text-gray-600 mt-1">Track orders, manage customers, and stay on top of finances — all in one place.</p>
 				</div>
-				<div className="w-15%">
-					<DateSelection onSelection={setCurrentDateSelection}></DateSelection>
+				<div className="w-15% flex items-center justify-between">
+					<p className="m-0 mr-2 text-gray-600">From:</p>
+					<DateSelection onSelection={setCurrentDateSelection} value={currentDateSelection}></DateSelection>
 				</div>
 			</div>
 			<div className="w-full">

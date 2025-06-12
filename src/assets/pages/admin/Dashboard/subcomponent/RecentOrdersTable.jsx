@@ -15,22 +15,24 @@ const RecentOrdersTable = () => {
 	const fetchRecentOrders = async (page, limit) => {
 		setLoading(true);
 		try {
-			const today = dayjs();
-			const startOfDay = today.startOf('day').toISOString(); // Start of today (ISO format for backend)
-			const endOfDay = today.endOf('day').toISOString();   // End of today (ISO format for backend)
+			const today = dayjs().format("YYYY-MM-DD");
 
 			// Make API call to your /api/orders endpoint with date range and pagination
 			const response = await axiosInstance.get(
-				`/api/orders?page=${page}&limit=${limit}&start=${startOfDay}&end=${endOfDay}`
+				`/api/orders?page=${page}&limit=${limit}&date=${today}`
 			);
 
-			setOrders(response.data.data);
+			const fetchedOrders = response.data.data?.[0]?.orders || [];
+			const apiPagination = response.data.pagination;
+
+			setOrders(fetchedOrders);
 			setPagination({
 				...pagination,
-				current: response.data.pagination.page,
-				pageSize: response.data.pagination.limit,
-				total: response.data.pagination.total_records,
+				current: apiPagination.page,
+				pageSize: apiPagination.limit,
+				total: apiPagination.total_records,
 			});
+
 		} catch (error) {
 			console.error("Failed to fetch recent orders:", error);
 			message.error("Failed to load recent orders.");
@@ -40,16 +42,17 @@ const RecentOrdersTable = () => {
 	};
 
 	useEffect(() => {
-		// Fetch recent orders whenever the component mounts or pagination state changes
 		fetchRecentOrders(pagination.current, pagination.pageSize);
 	}, [pagination.current, pagination.pageSize]);
 
-	const handleTableChange = (pagination) => {
-		// Update pagination state when table pagination controls are used
-		setPagination(pagination);
+	const handleTableChange = (newPagination) => {
+		setPagination(prevPagination => ({
+			...prevPagination,
+			current: newPagination.current,
+			pageSize: newPagination.pageSize,
+		}));
 	};
 
-	// Columns for the main Recent Orders table
 	const columns = [
 		{
 			title: "Order ID",
@@ -92,7 +95,7 @@ const RecentOrdersTable = () => {
 						color = "red";
 						break;
 					default:
-						color = "blue";
+						color = "blue"; // Fallback color
 				}
 				return (
 					<Tag color={color} key={status}>
@@ -173,9 +176,9 @@ const RecentOrdersTable = () => {
 				loading={loading}
 				pagination={{
 					...pagination,
-					showSizeChanger: false,
+					showSizeChanger: false, // You might want to enable this if you plan to allow users to change page size
 					showQuickJumper: false,
-					pageSizeOptions: ['5', '6', '10'],
+					// pageSizeOptions: ['5', '6', '10'], // Removed this as showSizeChanger is false
 				}}
 				onChange={handleTableChange}
 				className="w-full"

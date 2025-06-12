@@ -32,6 +32,7 @@ const DiscountModal = ({ visible, onCancel, onSave, editingDiscount, isLoading }
 
     return (
         <Modal
+            centered
             title={editingDiscount ? "Edit Discount" : "Create New Discount"}
             open={visible}
             onOk={handleOk}
