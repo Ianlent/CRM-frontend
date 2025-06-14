@@ -3,7 +3,7 @@ import { Table, Card, Button, Modal, Form, message } from "antd";
 import dayjs from "dayjs";
 import axiosInstance from "../../../../api/axiosInstance"; // Adjust the path as needed
 import DateSelection from "./subcomponent/DateSelector"; // Import the DateSelection component
-import ExpenseModal from "./subcomponent/expenseModal";
+import ExpenseModal from "./subcomponent/ExpenseModal";
 
 const FinancialManagement = () => {
 	const [revenueData, setRevenueData] = useState([]);
